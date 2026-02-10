@@ -1,0 +1,170 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PurchaseStatus {
+  PENDING
+  COMPLETED
+  CANCELED
+}
+
+model Client {
+  id         Int        @id @default(autoincrement())
+  full_name  String
+  address    String?
+  whatsApp   String
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+
+  purchases  Purchase[]
+}
+
+model Store {
+  id             Int        @id @default(autoincrement())
+  name           String     @unique
+  description    String
+  banner         String
+  profile_photo  String
+  instagram      String
+  whatsApp       String
+  address        String
+  business_hours String
+  email          String     @unique
+  password       String
+  created_at     DateTime   @default(now())
+  updated_at     DateTime   @updatedAt
+
+  purchases  Purchase[]
+  categories Category[]
+  products   Product[]
+  reviews   Review[]
+  visits     Visit[]
+}
+
+model Purchase {
+  id         Int        @id @default(autoincrement())
+  status     PurchaseStatus  @default(PENDING)
+  store_id   Int
+  client_id  Int
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+
+  client     Client     @relation(fields: [client_id], references: [id])
+  store      Store      @relation(fields: [store_id], references: [id])
+  items      OrderProduct[]
+}
+
+model Category {
+  id         Int        @id @default(autoincrement())
+  name       String
+  store_id   Int
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+  deleted_at   DateTime?
+
+  store         Store          @relation(fields: [store_id], references: [id])
+  subcategories Subcategory[]
+  products      Product[]
+}
+
+model Subcategory {
+  id           Int        @id @default(autoincrement())
+  name         String
+  category_id  Int
+  created_at   DateTime   @default(now())
+  updated_at   DateTime   @updatedAt
+  deleted_at   DateTime?
+
+  category Category @relation(fields: [category_id], references: [id])
+  products    Product[] 
+}
+
+model Product {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String
+  price       Float
+  store_id    Int
+  category_id Int
+  subcategory_id Int?
+  deleted_at   DateTime?
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+
+  store        Store        @relation(fields: [store_id], references: [id])
+  category     Category     @relation(fields: [category_id], references: [id])
+  subcategory   Subcategory? @relation(fields: [subcategory_id], references: [id])
+  variants     Variant[]
+  images       Image[]
+}
+
+model Variant {
+  id         Int        @id @default(autoincrement())
+  color      String?
+  size       String
+  stock      Int
+  product_id Int
+  deleted_at   DateTime?
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+
+  product Product        @relation(fields: [product_id], references: [id])
+  items   OrderProduct[]
+}
+
+model Image {
+  id         Int        @id @default(autoincrement())
+  is_cover   Boolean
+  url        String
+  product_id Int
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+
+  product Product @relation(fields: [product_id], references: [id])
+}
+
+model OrderProduct {
+  id          Int        @id @default(autoincrement())
+  color       String?
+  size        String
+  price       Float
+  quantity    Int
+  purchase_id Int
+  variant_id  Int
+  deleted_at  DateTime?
+
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+
+  purchase Purchase @relation(fields: [purchase_id], references: [id])
+  variant  Variant  @relation(fields: [variant_id], references: [id])
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  rating    Int
+  comment   String?
+  profile_photo String?
+  author_name String
+  store_id  Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  store     Store    @relation(fields: [store_id], references: [id])
+}
+
+model Visit {
+  id         Int      @id @default(autoincrement())
+  visitorId  String
+  storeId    Int
+  visitDate  DateTime
+
+  store      Store    @relation(fields: [storeId], references: [id])
+
+  @@unique([visitorId, storeId, visitDate])
+}
