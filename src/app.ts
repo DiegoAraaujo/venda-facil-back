@@ -13,7 +13,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "venda-facil-front.vercel.app",
+    origin: "https://venda-facil-front.vercel.app",
     credentials: true,
   }),
 );
