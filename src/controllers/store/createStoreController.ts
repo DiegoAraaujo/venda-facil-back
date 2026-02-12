@@ -70,7 +70,7 @@ export const createStoreController = async (req: Request, res: Response) => {
 
     if (Array.isArray(req.body.categories)) {
       for (const c of req.body.categories) {
-        const category = await createCategory(newStore.id, c.value);
+        const category = await createCategory(newStore.id, c.name);
         if (Array.isArray(c.subCategories) && c.subCategories.length > 0) {
           await Promise.all(
             c.subCategories.map((sc: string) =>
